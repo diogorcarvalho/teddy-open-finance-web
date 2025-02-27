@@ -1,6 +1,5 @@
 import 'primeicons/primeicons.css';
 import { useEffect, useRef, useState } from "react";
-import { useUser } from "../providers/UserContext";
 import CustomerCard from "../components/CustomerCard";
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
@@ -11,6 +10,7 @@ import { CreateCustomerForm } from '../components/CreateCustomerForm';
 import { Toast } from 'primereact/toast';
 import { EditCustomerForm } from '../components/EditCustomer';
 import { DeleteCustomerForm } from '../components/DeleteCustomerForm';
+import TopBar from '../components/TopBar';
 
 const headerTitle: any = {
     'create': 'Criar cliente:',
@@ -19,12 +19,19 @@ const headerTitle: any = {
 }
 
 export default function CustomerList() {
-    const { userName } = useUser();
     const { getAllCustomers } = useCustomerService();
 
     const pages = [16, 12, 8, 4];
-    const [selectedPages, setSelectedPages] = useState<number>(16);
+    const [first, setFirst] = useState(0);
+    const [rows, setRows] = useState(16);
+
+    const onPageChange = (event: any) => {
+        setFirst(event.first);
+        setRows(event.rows);
+    };
+    
     const [customers, setCustomers] = useState<Customer[]>([]);
+    const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer>();
 
     const [actionType, setActionType] = useState<'create' | 'edit' | 'delete'>('create');
@@ -65,7 +72,10 @@ export default function CustomerList() {
     const getAll = () => {
         getAllCustomers().then((response) => {
             if (response.success) {
-                setCustomers(response.data!);
+                const customers = response.data || [];
+                customers?.sort((a, b) => a.createAt.getTime() - b.createAt.getTime())!;
+                setCustomers(customers);
+                setFilteredCustomers(customers.slice(first, first + rows));
             } else {
                 /* @ts-ignore */
                 toast.current.show({ severity: 'error', summary: 'Erro...', detail: response.errorMessage, life: 3000 });
@@ -75,24 +85,12 @@ export default function CustomerList() {
 
     useEffect(() => {
         getAll();
-    }, [selectedPages]);
+    }, [first, rows]);
 
     return (
         <>
             <Toast ref={toast} />
-            <div className="top-menu flex justify-content-between flex-wrap p-4">
-                <div className="flex justify-content-center flex-wrap gap-3">
-                    <img src="menu_btn.png" style={{ height: 50 }} />
-                    <img src="teddy_logo.png" style={{ height: 50 }} />
-                </div>
-                <div className="flex justify-content-center flex-wrap gap-5 my-3">
-                    <div className="underline" style={{ color: '#E65C1C' }}>Clientes</div>
-                    <div>Clientes Selecionados</div>
-                    <div>Sair</div>
-                </div>
-                <div className=" my-3">Olá, <b>{userName || 'Foobar'}!</b></div>
-            </div>
-
+            <TopBar />
             <div className="body-content">
                 <div className="flex justify-content-between flex-wrap">
                     <div className="py-3">
@@ -102,30 +100,26 @@ export default function CustomerList() {
                     <div>
                         <span>Clientes por página </span>
                         <Dropdown
-                            value={selectedPages}
-                            onChange={(e) => setSelectedPages(e.value)}
+                            value={rows}
+                            onChange={(e) => setRows(e.value)}
                             options={pages}
                             optionLabel="name"
                             placeholder="selecione"
                             className="" />
                     </div>
                 </div>
-
                 <div className="grid mt-1">
-                    {customers.map((customer: Customer) => (
+                    {filteredCustomers.map((customer: Customer) => (
                         <div className="col-3" key={customer.id}>
                             <CustomerCard {...customer} edit={() => onEdit(customer)} remove={() => onDelete(customer)} />
                         </div>
                     ))}
                 </div>
-
                 <Button label="Criar cliente" severity="warning" outlined className="w-full mt-2" onClick={() => onCreate()} />
-
                 <div className="mt-2">
-                    <Paginator first={1} rows={16} totalRecords={120} onPageChange={() => { }} />
+                    <Paginator first={first} rows={rows} totalRecords={customers.length} rowsPerPageOptions={pages} onPageChange={onPageChange} />
                 </div>
             </div>
-
             <Dialog
                 header={headerTitle[actionType]}
                 visible={visible}
