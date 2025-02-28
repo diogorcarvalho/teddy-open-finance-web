@@ -69,7 +69,6 @@ export default function SelectedCustomerList() {
     return (
         <>
             <Toast ref={toast} />
-            <ConfirmDialog />
             <TopBar />
             <div className="body-content">
                 <h3 className="font-semibold">Clientes selecionados:</h3>

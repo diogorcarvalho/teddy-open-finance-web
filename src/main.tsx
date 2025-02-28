@@ -7,9 +7,11 @@ import "primereact/resources/primereact.min.css"; // Estilos básicos do PrimeRe
 import "primeicons/primeicons.css"; // Ícones do PrimeIcons
 import "primeflex/primeflex.css"; // Utilitários CSS do PrimeFlex
 import "./index.css"; // Seu CSS global (opcional)
+import { ConfirmDialog } from 'primereact/confirmdialog';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
+    <ConfirmDialog />
   </StrictMode>,
 );
