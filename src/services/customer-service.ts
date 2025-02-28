@@ -27,9 +27,9 @@ export interface BaseResponse<T> {
 }
 
 export function useCustomerService() {
-    async function getAllCustomers(): Promise<BaseResponse<Customer[]>> {
+    async function getAllCustomers(selected: boolean): Promise<BaseResponse<Customer[]>> {
         try {
-            const response = await fetch(`http://localhost:3000/api/customers`, {
+            const response = await fetch(`http://localhost:3000/api/customers?selected=${selected}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -98,6 +98,29 @@ export function useCustomerService() {
         }
     }
 
+    async function selectCustomers(itens: { id: string, select: boolean }[]): Promise<BaseResponse<string>> {
+        try {
+            const response = await fetch(`http://localhost:3000/api/customers/select`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(itens),
+            });
+
+            if (!response.ok) {
+                return { success: false, errorMessage: response.statusText };
+            }
+
+            const messageResponse = await response.json();
+
+            return {
+                success: true,
+                data: messageResponse.message,
+            };
+        } catch (error) {
+            return { success: false, errorMessage: `${error}` };
+        }
+    }
+
     async function deleteCustomer(id: string): Promise<BaseResponse<string>> {
         try {
             const response = await fetch(`http://localhost:3000/api/customers/${id}`, {
@@ -125,5 +148,6 @@ export function useCustomerService() {
         postCustomer,
         patchCustomer,
         deleteCustomer,
+        selectCustomers,
     };
 };

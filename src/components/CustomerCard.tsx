@@ -6,11 +6,13 @@ export interface CustomerCardProps {
     name: string;
     salary: number;
     companyValue: number;
-    edit: () => void
-    remove: () => void
+    edit?: () => void | undefined;
+    remove?: () => void | undefined;
+    select?: () => void | undefined;
+    unselect?: () => void | undefined;
 }
 
-export default function CustomerCard({ name: customerName, salary, companyValue, edit, remove, }: CustomerCardProps) {
+export default function CustomerCard({ name: customerName, salary, companyValue, edit, remove, select, unselect }: CustomerCardProps) {
     return (
         <div className="card">
             <div className="mb-1">
@@ -19,9 +21,10 @@ export default function CustomerCard({ name: customerName, salary, companyValue,
                 <div className="text-center text-sm">Empresa: {formatCurrency(companyValue)}</div>
             </div>
             <div className="flex justify-content-between">
-                <Button icon="pi pi-plus" rounded text disabled={true} />
-                <Button icon="pi pi-pencil" rounded text onClick={() => edit()} />
-                <Button icon="pi pi-trash" rounded text severity="danger" onClick={() => remove()} />
+                {select && <Button icon="pi pi-plus" rounded text onClick={() => select()} />}
+                {edit && <Button icon="pi pi-pencil" rounded text onClick={() => edit()} />}
+                {remove && <Button icon="pi pi-trash" rounded text severity="danger" onClick={() => remove()} />}
+                {unselect && <Button icon="pi pi-minus" rounded text onClick={() => unselect()} />}
             </div>
         </div>
     );

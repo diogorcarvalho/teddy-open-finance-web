@@ -19,7 +19,7 @@ const headerTitle: any = {
 }
 
 export default function CustomerList() {
-    const { getAllCustomers } = useCustomerService();
+    const { getAllCustomers, selectCustomers } = useCustomerService();
 
     const pages = [16, 12, 8, 4];
     const [first, setFirst] = useState(0);
@@ -56,6 +56,19 @@ export default function CustomerList() {
         setVisible(true);
     }
 
+    const onSelect = (customer: Customer) => {
+        selectCustomers([{ id: customer.id, select: true }]).then((response) => {
+            if (response.success) {
+                /* @ts-ignore */
+                toast.current.show({ severity: 'success', summary: 'Successo!', detail: 'Cliente "selecionado" com sucesso', life: 3000 });
+                getAll();
+            } else {
+                /* @ts-ignore */
+                toast.current.show({ severity: 'error', summary: 'Erro...', detail: response.errorMessage, life: 3000 });
+            }
+        });
+    }
+
     const onSuccess = (mesage: string) => {
         setVisible(false);
         getAll();
@@ -70,7 +83,7 @@ export default function CustomerList() {
     }
 
     const getAll = () => {
-        getAllCustomers().then((response) => {
+        getAllCustomers(false).then((response) => {
             if (response.success) {
                 const customers = response.data || [];
                 customers?.sort((a, b) => a.createAt.getTime() - b.createAt.getTime())!;
@@ -111,7 +124,7 @@ export default function CustomerList() {
                 <div className="grid mt-1">
                     {filteredCustomers.map((customer: Customer) => (
                         <div className="col-3" key={customer.id}>
-                            <CustomerCard {...customer} edit={() => onEdit(customer)} remove={() => onDelete(customer)} />
+                            <CustomerCard {...customer} edit={() => onEdit(customer)} remove={() => onDelete(customer)} select={() => onSelect(customer)} />
                         </div>
                     ))}
                 </div>
